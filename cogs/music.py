@@ -13,7 +13,7 @@ class music(commands.Cog):
         self.playlist = []
 
     @commands.command()
-    async def play(self, ctx, url):
+    async def _play(self, ctx, url):
         ctx.voice_client.stop()
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         YDL_OPTIONS = {'format': "bestaudio"}
@@ -33,12 +33,12 @@ class music(commands.Cog):
         self.playlist = list(Playlist(ctx.message.content[10:]))
         for video in self.playlist:
             if not vc.is_playing:
-                await self.play(ctx, video)
+                await self._play(ctx, video)
                 self.playlist.pop(0)
             else:
                 while vc.is_playing():
                     await asyncio.sleep(0.05)
-                await self.play(ctx, self.playlist[0])
+                await self._play(ctx, self.playlist[0])
                 self.playlist.pop(0)
 
     @commands.command()
@@ -51,7 +51,7 @@ class music(commands.Cog):
             await ctx.channel.send('Skip!')
             ctx.voice_client.stop()
             self.playlist.pop(0)
-            await self.play(ctx, self.playlist[0])
+            await self._play(ctx, self.playlist[0])
 
     @commands.command()
     async def queue(self, ctx):
