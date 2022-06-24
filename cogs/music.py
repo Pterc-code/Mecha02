@@ -1,11 +1,12 @@
 import random
 import asyncio
+
 import discord
 from discord.ext import commands
 import youtube_dl
 
 from pytube import Playlist
-
+from pytube import YouTube
 
 class music(commands.Cog):
     def __init__(self, client):
@@ -14,8 +15,9 @@ class music(commands.Cog):
 
     @commands.command()
     async def _play(self, ctx, url):
-        ctx.voice_client.stop()
-        FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+        FFMPEG_OPTIONS = {
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+            'options': '-vn'}
         YDL_OPTIONS = {'format': "bestaudio"}
         vc = ctx.voice_client
 
@@ -26,32 +28,25 @@ class music(commands.Cog):
                                                               **FFMPEG_OPTIONS)
             vc.play(source)
 
+    async def _playCont(self, ctx):
+        vc = ctx.voice_client
+        while self.playlist is not []:
+            if vc.is_playing():
+                await asyncio.sleep(1000000000000000000000000000000000000000000)
+            song = self.playlist.pop(0)
+            await ctx.send('Now playing: ' + YouTube(song).title + song)
+            await self._play(ctx, song)
+
     @commands.command()
     async def playlist(self, ctx):
-        vc = ctx.voice_client
-
         self.playlist = list(Playlist(ctx.message.content[10:]))
-        for video in self.playlist:
-            if not vc.is_playing:
-                await self._play(ctx, video)
-                self.playlist.pop(0)
-            else:
-                while vc.is_playing():
-                    await asyncio.sleep(0.05)
-                await self._play(ctx, self.playlist[0])
-                self.playlist.pop(0)
+        await self._playCont(ctx)
 
     @commands.command()
     async def skip(self, ctx):
-        vc = ctx.voice_client
-
-        if not vc.is_playing:
-            await ctx.channel.send('What do you want me to skip? There are no songs playing.')
-        else:
-            await ctx.channel.send('Skip!')
-            ctx.voice_client.stop()
-            self.playlist.pop(0)
-            await self._play(ctx, self.playlist[0])
+        ctx.voice_client.stop()
+        await self._playCont(ctx)
+        await ctx.channel.send('Skip!')
 
     @commands.command()
     async def queue(self, ctx):
