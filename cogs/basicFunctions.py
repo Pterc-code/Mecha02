@@ -18,9 +18,9 @@ class basicFunctions(commands.Cog):
     # Events
     @commands.Cog.listener()
     async def on_command_error(self, ctx, errors):
-        # if isinstance(errors, commands.MissingRequiredArgument):
-        #     await ctx.send("You're missing a required argument!")
-        await ctx.channel.send(errors)
+        if isinstance(errors, commands.MissingRequiredArgument):
+            await ctx.send("You're missing a required argument!")
+        # await ctx.send(errors)
 
     @commands.Cog.listener()
     async def on_ready(self):

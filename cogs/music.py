@@ -27,16 +27,6 @@ class music(commands.Cog):
             vc.play(source)
 
     @commands.command()
-    async def pause(self, ctx):
-        await ctx.voice_client.pause()
-        await ctx.send('Paused')
-
-    @commands.command()
-    async def resume(self, ctx):
-        await ctx.voice_client.resume()
-        await ctx.send('Resumed')
-
-    @commands.command()
     async def playlist(self, ctx):
         vc = ctx.voice_client
 
@@ -59,7 +49,7 @@ class music(commands.Cog):
             await ctx.channel.send('What do you want me to skip? There are no songs playing.')
         else:
             await ctx.channel.send('Skip!')
-            await ctx.voice_client.stop()
+            ctx.voice_client.stop()
             self.playlist.pop(0)
             await self.play(ctx, self.playlist[0])
 
@@ -69,10 +59,9 @@ class music(commands.Cog):
         nextInQ = ctx.message.content[7:]
         self.playlist.insert(0, nextInQ)
 
-
     @commands.command()
     async def shuffle(self, ctx):
-        await ctx.channel.send('Shuffled.')
+        await ctx.send('Shuffled.')
         self.playlist = random.shuffle(self.playlist)[:]
 
 
