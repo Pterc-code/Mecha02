@@ -28,6 +28,7 @@ class basicFunctions(commands.Cog):
                                           activity=discord.Game("Mecha 01"))
         print("Bot is online.")
 
+
     # Commands
     @commands.command()
     async def ping(self, ctx):
@@ -50,6 +51,7 @@ class basicFunctions(commands.Cog):
     @commands.command()
     async def disconnect(self, ctx):
         await ctx.voice_client.disconnect()
+
 
 
 def setup(client):

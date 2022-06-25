@@ -5,8 +5,8 @@ import discord
 from discord.ext import commands
 import youtube_dl
 
-from pytube import Playlist
-from pytube import YouTube
+from pytube import Playlist, YouTube
+
 
 class music(commands.Cog):
     def __init__(self, client):
@@ -31,8 +31,8 @@ class music(commands.Cog):
     async def _playCont(self, ctx):
         vc = ctx.voice_client
         while self.playlist is not []:
-            if vc.is_playing():
-                await asyncio.sleep(1000000000000000000000000000000000000000000)
+            while vc.is_playing():
+                await asyncio.sleep(1.5)
             song = self.playlist.pop(0)
             await ctx.send('Now playing: ' + YouTube(song).title + song)
             await self._play(ctx, song)
@@ -45,7 +45,6 @@ class music(commands.Cog):
     @commands.command()
     async def skip(self, ctx):
         ctx.voice_client.stop()
-        await self._playCont(ctx)
         await ctx.channel.send('Skip!')
 
     @commands.command()

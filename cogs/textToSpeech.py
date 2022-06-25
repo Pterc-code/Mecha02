@@ -1,3 +1,4 @@
+import random
 from collections import deque
 import discord
 from discord import ClientException
@@ -12,12 +13,23 @@ file = open("praises.txt", "r")
 praises = []
 for line in file:
     stripped_line = line.strip()
-    praises.append(stripped_line)
-
+    praises.append(stripped_line.split('||')[0])
 
 class textToSpeech(commands.Cog):
     def __init__(self, client):
         self.client = client
+
+    # Events
+    @commands.Cog.listener()
+    async def on_message(self, ctx):
+        if ctx.author.id == 343271388527853579: # Daniel
+            await ctx.channel.send(random.choice(praises))
+        elif ctx.author.id == 526991910074581003: # Bobby
+            await ctx.channel.send(random.choice(praises))
+        elif ctx.author.id == 264670780317499403: # Ashley
+            await ctx.channel.send(random.choice(praises))
+        # else:
+        #     print(ctx.author.name, ctx.author.id)
 
     # Commands
     @commands.command()
@@ -69,14 +81,16 @@ class textToSpeech(commands.Cog):
     @commands.command()
     async def add(self, ctx):
         with open('praises.txt', 'a') as f:
-            f.write('\n' + ctx.message.content[5:])
+            f.write('\n' + ctx.message.content[5:] + '||' + ctx.author.name)
             f.close()
         await ctx.channel.send('Added praise: ' + ctx.message.content[5:])
 
     @commands.command()
     async def showPraises(self, ctx):
-        for praise in praises:
-            await ctx.channel.send(praise)
+        file = open("praises.txt", "r")
+        for line in file:
+            stripped_line = line.strip().replace('||', ':  ')
+            await ctx.channel.send(stripped_line)
 
     # Helpers
     async def speak(self, ctx, vc, text, lang):
