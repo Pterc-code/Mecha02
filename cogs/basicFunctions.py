@@ -2,8 +2,6 @@
 import discord
 from discord.ext import commands
 
-import random
-
 
 class basicFunctions(commands.Cog):
     """
@@ -50,6 +48,7 @@ class basicFunctions(commands.Cog):
 
     @commands.command()
     async def disconnect(self, ctx):
+        ctx.voice_client.stop()
         await ctx.voice_client.disconnect()
 
 

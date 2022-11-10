@@ -15,6 +15,8 @@ for line in file:
     stripped_line = line.strip()
     praises.append(stripped_line.split('||')[0])
 
+file.close()
+
 class textToSpeech(commands.Cog):
     def __init__(self, client):
         self.client = client
