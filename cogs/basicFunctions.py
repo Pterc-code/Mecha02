@@ -15,29 +15,35 @@ class basicFunctions(commands.Cog):
 
     # Events
     @commands.Cog.listener()
-    async def on_command_error(self, ctx, errors):
+    async def on_command_error(self, ctx, errors) -> None:
         if isinstance(errors, commands.MissingRequiredArgument):
             await ctx.send("You're missing a required argument!")
-        # await ctx.send(errors)
 
     @commands.Cog.listener()
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         await self.client.change_presence(status=discord.Status.online,
                                           activity=discord.Game("Mecha 01"))
         print("Bot is online.")
 
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after) -> None:
+        if self.client.voice_clients is not None: # Checks if the bot is currently in a voice_client
+            if len(self.client.voice_clients) == 1: # Checks if the bot is alone
+                voice = discord.utils.get(self.client.voice_clients)
+                voice.stop()
+                await voice.disconnect()
 
     # Commands
     @commands.command()
-    async def ping(self, ctx):
+    async def ping(self, ctx) -> None:
         await ctx.send(f"The ping is {round(self.client.latency * 1000)}ms")
 
     @commands.command()
-    async def clear(self, ctx, amount: int):
+    async def clear(self, ctx, amount: int) -> None:
         await ctx.channel.purge(limit=amount)
 
     @commands.command()
-    async def join(self, ctx):
+    async def join(self, ctx) -> None:
         if ctx.author.voice is None:
             await ctx.send("You're not in a voice channel.")
         voice_channel = ctx.author.voice.channel
@@ -47,10 +53,9 @@ class basicFunctions(commands.Cog):
             await ctx.voice_client.move_to(voice_channel)
 
     @commands.command()
-    async def disconnect(self, ctx):
+    async def disconnect(self, ctx) -> None:
         ctx.voice_client.stop()
         await ctx.voice_client.disconnect()
-
 
 
 def setup(client):

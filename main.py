@@ -13,7 +13,7 @@ client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 @client.command()
 async def load(ctx, extension) -> None:
     """
-    Loods the cog with name: extension which can be found in the project folder
+    Loads the cog with name: extension
     """
     client.load_extension(f"cogs.{extension}")
 

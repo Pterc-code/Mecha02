@@ -1,12 +1,11 @@
 import random
 from collections import deque
-import discord
-from discord import ClientException
 from discord.ext import commands
-from discord.opus import OpusNotLoaded
-from gtts import gTTS
 import asyncio
 from random import choice
+
+from staticFunctions import play_in_vc
+
 
 file = open("praises.txt", "r")
 
@@ -17,6 +16,7 @@ for line in file:
 
 file.close()
 
+
 class textToSpeech(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -24,64 +24,79 @@ class textToSpeech(commands.Cog):
     # Events
     @commands.Cog.listener()
     async def on_message(self, ctx):
-        if ctx.author.id == 343271388527853579: # Daniel
+        """
+        Detects if a certain person typed in chat and give them a praise
+        """
+        if ctx.author.id == 343271388527853579:  # Daniel
             await ctx.channel.send(random.choice(praises))
-        elif ctx.author.id == 526991910074581003: # Bobby
+        elif ctx.author.id == 526991910074581003:  # Bobby
             await ctx.channel.send(random.choice(praises))
-        elif ctx.author.id == 264670780317499403: # Ashley
+        elif ctx.author.id == 264670780317499403:  # Ashley
             await ctx.channel.send(random.choice(praises))
-        # else:
-        #     print(ctx.author.name, ctx.author.id)
 
     # Commands
     @commands.command()
     async def praise(self, ctx):
-        vc = ctx.voice_client
-        if not vc:
+        """
+        Randomly praise the given name in the ctx 
+        """
+        # Detects if the user who gave the command is in a voice channel
+        voice_client = ctx.voice_client
+        if not voice_client:
             await ctx.send('Not in voice channel!')
 
+        # Queue the praises
         msgQ = deque([])
         praise = ctx.message.content[7:] + ' , ' + choice(praises)
-        if not vc.is_playing:
-            await self.speak(ctx, vc, praise, 'en')
+        if not voice_client.is_playing:
+            await play_in_vc(ctx, voice_client, praise, 'en')
         else:
             msgQ.append(praise)
-            while vc.is_playing():
+            while voice_client.is_playing():
                 await asyncio.sleep(0.05)
-            await self.speak(ctx, vc, msgQ.popleft(), 'en')
+            await play_in_vc(ctx, voice_client, msgQ.popleft(), 'en')
 
     @commands.command()
     async def say(self, ctx):
-        vc = ctx.voice_client
-        if not vc:
+        """
+        Say in the voice channel of the author the given context, in English
+        """
+        voice_client = ctx.voice_client
+        if not voice_client:
             await ctx.send('Not in voice channel!')
 
         msgQ = deque([])
-        if not vc.is_playing:
-            await self.speak(ctx, vc, ctx.message.content[5:], 'en')
+        if not voice_client.is_playing:
+            await play_in_vc(ctx, voice_client, ctx.message.content[5:], 'en')
         else:
             msgQ.append(ctx.message.content[5:])
-            while vc.is_playing():
+            while voice_client.is_playing():
                 await asyncio.sleep(0.05)
-            await self.speak(ctx, vc, msgQ.popleft(), 'en')
+            await play_in_vc(ctx, voice_client, msgQ.popleft(), 'en')
 
     @commands.command()
     async def shuo(self, ctx):
+        """
+        Say in the voice channel of the author the given context, in Chinese
+        """
         vc = ctx.voice_client
         if not vc:
             await ctx.send('Not in voice channel!')
 
         msgQ = deque([])
         if not vc.is_playing:
-            await self.speak(ctx, vc, ctx.message.content[5:], 'zh-CN')
+            await play_in_vc(ctx, vc, ctx.message.content[5:], 'zh-CN')
         else:
             msgQ.append(ctx.message.content[5:])
             while vc.is_playing():
                 await asyncio.sleep(0.05)
-            await self.speak(ctx, vc, msgQ.popleft(), 'zh-CN')
+            await play_in_vc(ctx, vc, msgQ.popleft(), 'zh-CN')
 
     @commands.command()
     async def add(self, ctx):
+        """
+        Add a custom praise
+        """
         with open('praises.txt', 'a') as f:
             f.write('\n' + ctx.message.content[5:] + '||' + ctx.author.name)
             f.close()
@@ -89,24 +104,15 @@ class textToSpeech(commands.Cog):
 
     @commands.command()
     async def showPraises(self, ctx):
-        file = open("praises.txt", "r")
-        for line in file:
-            stripped_line = line.strip().replace('||', ':  ')
-            await ctx.channel.send(stripped_line)
+        """
+        Print all praises
+        """
+        f = open("praises.txt", "r")
+        for praise in f:
+            praise = praise.strip().replace('||', ':  ')
+            await ctx.channel.send(praise)
 
     # Helpers
-    async def speak(self, ctx, vc, text, lang):
-        msg = gTTS(text=text, lang=lang)
-        msg.save('temp.mp3')
-        try:
-            vc.play(discord.FFmpegPCMAudio('temp.mp3'),
-                    after=lambda e: print(f"Finished playing: {msg.text}"))
-        except ClientException as e:
-            await ctx.send(f"A client exception occured:\n`{e}`")
-        except TypeError as e:
-            await ctx.send(f"TypeError exception:\n`{e}`")
-        except OpusNotLoaded as e:
-            await ctx.send(f"OpusNotLoaded exception: \n`{e}`")
 
 
 def setup(client):
