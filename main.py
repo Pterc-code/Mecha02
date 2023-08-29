@@ -4,12 +4,15 @@ import os
 
 from discord.ext import commands
 import discord
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # sets the command prefix to !
 client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 # Bot token
-TOKEN = "NzU4NDA3NDcwMDU2OTk2OTA0.GPm3Jp.Cod6uZ4XGvVNdSpQJdS2K3XpAZEEtUdssDTNqM"
+TOKEN = os.environ.get('BOT_TOKEN')
 
 
 # Basic Commands
