@@ -33,7 +33,11 @@ async def loadPraise():
     file.close()
 
 
+# Helper function to get list of friends
 def _get_all_friends() -> list:
+    """
+    Returns a list of all players in your friends list as LeaguePlayer objects
+    """
     metadata = requests.get('https://127.0.0.1:2999/liveclientdata/allgamedata', verify=False)
     players = []
     for user in metadata.json()['allPlayers']:
@@ -42,6 +46,7 @@ def _get_all_friends() -> list:
     return players
 
 
+# Helper function to generate a praise
 def _generate_praise(name) -> str:
     return f'{name}, {random.choice(praises)}, also, stop dying!'
 
@@ -54,6 +59,9 @@ class LeagueGameStatus(commands.Cog):
 
     @commands.command()
     async def monitor(self, ctx):
+        """
+        During a game of league of legends, if any of your friends die: give them a praise!
+        """
         try:
             await loadPraise()
             friends = _get_all_friends()
