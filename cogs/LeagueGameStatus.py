@@ -24,13 +24,11 @@ praises = []
 
 # Load PraiseFiles
 async def loadPraise():
-    file = open("cogs/PraiseFiles/praises.txt", "r")
-
-    for line in file:
-        stripped_line = line.strip()
-        praises.append(stripped_line.split('||')[0])
-
-    file.close()
+    praises.clear()
+    with open("cogs/PraiseFiles/praises.txt", "r") as file:
+        for line in file:
+            stripped_line = line.strip()
+            praises.append(stripped_line.split('||')[0])
 
 
 # Helper function to get list of friends
@@ -63,6 +61,10 @@ class LeagueGameStatus(commands.Cog):
         During a game of league of legends, if any of your friends die: give them a praise!
         """
         try:
+            voice_client = ctx.voice_client
+            if voice_client is None or not voice_client.is_connected():
+                await ctx.send("I'm not connected to a voice channel. Use `!join` before starting the monitor.")
+                return
             await loadPraise()
             friends = _get_all_friends()
 

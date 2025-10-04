@@ -1,7 +1,5 @@
 # Imports
 import random
-import asyncio
-from collections import deque
 from discord.ext import commands
 
 from random import choice
@@ -13,19 +11,16 @@ praises = []
 
 # Load PraiseFiles
 async def loadPraise():
-    file = open("cogs/PraiseFiles/praises.txt", "r")
-
-    for line in file:
-        stripped_line = line.strip()
-        praises.append(stripped_line.split('||')[0])
-
-    file.close()
+    praises.clear()
+    with open("cogs/PraiseFiles/praises.txt", "r") as file:
+        for line in file:
+            stripped_line = line.strip()
+            praises.append(stripped_line.split('||')[0])
 
 
 class TextToSpeech(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.msgQ = deque([])
 
     # Events
     @commands.Cog.listener()
@@ -47,16 +42,12 @@ class TextToSpeech(commands.Cog):
         Randomly praise the given name in the ctx
         """
         voice_client = ctx.voice_client
+        if voice_client is None or not voice_client.is_connected():
+            await ctx.send("I'm not in a voice channel. Use `!join` first.")
+            return
 
-        # Queue the praises
         praise = ctx.message.content[7:] + ' , ' + choice(praises)
-        if not voice_client.is_playing:
-            await vocalizeText(ctx, praise, 'en')
-        else:
-            self.msgQ.append(praise)
-            while voice_client.is_playing():
-                await asyncio.sleep(0.05)
-            await vocalizeText(ctx, self.msgQ.popleft(), 'en')
+        await vocalizeText(ctx, praise, 'en')
 
     @commands.command()
     async def say(self, ctx):
@@ -64,6 +55,9 @@ class TextToSpeech(commands.Cog):
         Say in the voice channel of the author the given context
         """
         voice_client = ctx.voice_client
+        if voice_client is None or not voice_client.is_connected():
+            await ctx.send("I'm not in a voice channel. Use `!join` first.")
+            return
         text = ctx.message.content[5:]
 
         if is_chinese(text):
@@ -71,13 +65,7 @@ class TextToSpeech(commands.Cog):
         else:
             target_language = 'en'
 
-        if not voice_client.is_playing:
-            await vocalizeText(ctx, ctx.message.content[5:], target_language)
-        else:
-            self.msgQ.append(ctx.message.content[5:])
-            while voice_client.is_playing():
-                await asyncio.sleep(0.05)
-            await vocalizeText(ctx, self.msgQ.popleft(), target_language)
+        await vocalizeText(ctx, text, target_language)
 
     @commands.command()
     async def add(self, ctx):
@@ -94,10 +82,10 @@ class TextToSpeech(commands.Cog):
         """
         Print all praises
         """
-        f = open("cogs/TextToSpeechFiles/praises.txt", "r")
-        for praise in f:
-            praise = praise.strip().replace('||', ':  ')
-            await ctx.channel.send(praise)
+        with open("cogs/TextToSpeechFiles/praises.txt", "r") as f:
+            for praise in f:
+                praise = praise.strip().replace('||', ':  ')
+                await ctx.channel.send(praise)
 
 
 async def setup(client):
