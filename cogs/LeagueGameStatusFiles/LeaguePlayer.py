@@ -1,8 +1,10 @@
 import requests
 
+from mecha.config import load_settings
+
 
 def _update_metadata():
-    return requests.get('https://127.0.0.1:2999/liveclientdata/allgamedata', verify=False).json()
+    return requests.get(load_settings().league_api_url, verify=False).json()
 
 
 class Player:
@@ -14,29 +16,24 @@ class Player:
         self.assist_count = 0
 
     def deathDetected(self) -> bool:
-        """
-        Returns True when player dies, False when player did not die
-        """
         death = self.get_death_count()
         if death > self.death_count:
             self.death_count = death
             return True
         return False
 
-    # Gets player death, kill, assist counts
     def get_death_count(self):
         metadata = _update_metadata()
-        return metadata['allPlayers'][self.player_index]['scores']['deaths']
+        return metadata["allPlayers"][self.player_index]["scores"]["deaths"]
 
     def get_kill_count(self):
         metadata = _update_metadata()
-        return metadata['allPlayers'][self.player_index]['scores']['kills']
+        return metadata["allPlayers"][self.player_index]["scores"]["kills"]
 
     def get_assist_count(self):
         metadata = _update_metadata()
-        return metadata['allPlayers'][self.player_index]['scores']['assist']
+        return metadata["allPlayers"][self.player_index]["scores"]["assist"]
 
-    # Updates player death, kill, assist counts
     def update_death_count(self):
         self.death_count = self.get_death_count()
 
@@ -46,12 +43,9 @@ class Player:
     def update_assist_count(self):
         self.assist_count = self.get_assist_count()
 
-    # Helper function to get player index in .json file
     def _get_player_index(self) -> int:
-        """
-        Returns the player index in the .json file
-        """
         metadata = _update_metadata()
-        for i in range(len(metadata['allPlayers'])):
-            if metadata['allPlayers'][i]['summonerName'] == f'{self.user_name}':
-                return i
+        for index, player in enumerate(metadata["allPlayers"]):
+            if player["summonerName"] == self.user_name:
+                return index
+        raise KeyError(self.user_name)

@@ -1,1 +1,8 @@
 .env
+.venv/
+__pycache__/
+*.py[cod]
+.idea/
+tmp/*
+!tmp/.gitkeep
+cogs/TextToSpeechFiles/*.mp3
